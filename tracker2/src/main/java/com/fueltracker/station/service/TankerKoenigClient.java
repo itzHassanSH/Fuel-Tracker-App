@@ -25,7 +25,7 @@ public class TankerKoenigClient {
         String sortTypeString = sortType.toString().toLowerCase();
         String fuelTypeString = fuelType.toString().toLowerCase();
 
-        ApiStationResponse apiResponse =  restClient.get()
+        return restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/json/list.php")
                         .queryParam("lat", lat)
@@ -37,8 +37,5 @@ public class TankerKoenigClient {
                         .build())
                 .retrieve()
                 .body(ApiStationResponse.class);
-
-        System.out.println(apiResponse);
-        return apiResponse;
     }
 }
