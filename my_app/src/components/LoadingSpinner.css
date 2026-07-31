@@ -1,0 +1,51 @@
+.loading-spinner {
+    /*
+    we need a default size
+     */
+    --loading-spinner-size: 50px;
+
+    /*
+    with inline css (inside the tsx file), we can define any of these properties using parameter values
+     */
+    width: var(--loading-spinner-size);
+    height: var(--loading-spinner-size);
+    border: calc(var(--loading-spinner-size) / 5 ) solid #dddddd;
+    border-radius: 50%;
+    box-sizing: border-box;
+
+    /*
+    green fill
+     */
+    border-top-color: black;
+
+    animation: loading 0.75s ease infinite;
+}
+
+@keyframes loading {
+    /*
+    animation starts here at 0deg rotation - the starting appearance
+     */
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(1turn);
+    }
+
+
+}
+
+/*
+for sizes we must define extra classes:
+   - we save the value inside this identifier that we can use elsewhere
+ */
+.loading-spinner--small {
+    --loading-spinner-size: 25px;
+}
+.loading-spinner--medium {
+    --loading-spinner-size: 50px;
+}
+.loading-spinner--large {
+    --loading-spinner-size: 75px;
+}

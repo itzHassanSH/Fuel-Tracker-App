@@ -1,4 +1,4 @@
-package com.fueltracker.dto;
+package com.fueltracker.dto.Requests;
 
 import com.fueltracker.shared.FuelType;
 import com.fueltracker.shared.SortType;

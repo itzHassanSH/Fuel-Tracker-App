@@ -1,15 +1,24 @@
-package com.fueltracker.dto;
+package com.fueltracker.dto.Responses;
 
 public record StationResponse(
     String name,
     String brand,
+    String externalId,
+
     String street,
     String postalCode,
-    int houseNumber,
+    String houseNumber,
     String place,  // E.g. Stuttgart
+
+    double distance,
     double lat,
     double lng,
-    float distance
+
+    Double diesel,
+    Double e5,
+    Double e10,
+
+    boolean isOpen
 ) {
 
 }
