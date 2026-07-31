@@ -3,9 +3,15 @@ package com.fueltracker.station;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
 @Entity
 public class Station {
     @Id
@@ -24,6 +30,9 @@ public class Station {
 
     private double distance;
 
+    private boolean isActive;
+    private LocalDateTime lastSyncedAt;
+
     // both opening times and fuels should lie inside cache and returned after requests -
     // just not saved inside the DB itself
 
@@ -37,6 +46,7 @@ public class Station {
 
     public Station() {};
     private Station(Builder builder) {
+        this.id = builder.id;
         this.name = builder.name;
         this.brand = builder.brand;
         this.street = builder.street;
@@ -47,9 +57,13 @@ public class Station {
         this.lng = builder.lng;
         this.distance = builder.distance;
         this.favouritedBy = builder.favouritedBy;
+
+        this.isActive = builder.isActive;
+        this.lastSyncedAt = builder.lastSyncedAt;
     }
 
     public static class Builder {
+        private String id;
         private String name;
         private String brand;
         private String street;
@@ -60,7 +74,13 @@ public class Station {
         private double lng;
         private double distance;
         private List<FavouriteStation> favouritedBy;
+        private boolean isActive;
+        private LocalDateTime lastSyncedAt;
 
+        public Builder id (String id) {
+            this.id = id;
+            return this;
+        }
         public Builder name (String name) {
             this.name = name;
             return this;
@@ -101,7 +121,15 @@ public class Station {
             this.favouritedBy = favouritedBy;
             return this;
         }
+        public Builder isActive(boolean isActive) {
+            this.isActive = isActive;
+            return this;
+        }
+        public Builder lastSyncedAt(LocalDateTime lastSyncedAt) {
+            this.lastSyncedAt = lastSyncedAt;
+            return this;
+        }
 
-        public Station builder() {return new Station(this);}
+        public Station build() {return new Station(this);}
     }
 }

@@ -12,11 +12,11 @@ public class TankerKoenigConfig {
         return RestClient.builder();
     }
 
-    @Bean
+    @Bean("tankerKoenigRestClient")
     public RestClient TankerKoenigConfig(RestClient.Builder builder, TankerKoenigProperties properties) {
 
-        return builder.baseUrl(properties.baseUrl())
-                .defaultHeader("X-Api-Key", properties.apiKey())
+        return builder.baseUrl(properties.getBaseUrl())
+                .defaultHeader("X-Api-Key", properties.getApiKey())
                 .build();
     }
 

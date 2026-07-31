@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import java.util.List;
 
 @Entity
+// using table as "user" causes SQL error since it tries to create a new USER rather than a table called user
+@Table(name="users")
 public class User {
     @Id
     @GeneratedValue

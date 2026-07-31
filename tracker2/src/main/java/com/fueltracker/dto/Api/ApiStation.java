@@ -8,7 +8,8 @@ public record ApiStation(
       String place,
       double lat,
       double lng,
-      double distance,
+
+      Double dist,
       //Optionals
       Double diesel,
       Double e5,
