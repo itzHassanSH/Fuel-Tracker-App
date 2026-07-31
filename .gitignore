@@ -39,3 +39,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Spring secrets
+application.properties
+application-*.properties
