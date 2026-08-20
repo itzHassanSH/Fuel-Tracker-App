@@ -19,7 +19,7 @@ public class StationSearchKeyGenerator implements KeyGenerator {
         FuelType type = (FuelType) params[3];
 
         // degrees per km ≈ 0.009
-        double gridSize = (radius / 2.0) * 0.009;
+        double gridSize = (radius / 4.0) * Math.sqrt(2) * 0.009;
 
         double snappedLat = Math.round(coords.latitude() / gridSize) * gridSize;
         double snappedLng = Math.round(coords.longitude() / gridSize) * gridSize;
@@ -28,6 +28,7 @@ public class StationSearchKeyGenerator implements KeyGenerator {
         snappedLat = Math.round(snappedLat * 10000.0) / 10000.0;
         snappedLng = Math.round(snappedLng * 10000.0) / 10000.0;
 
+        System.out.println(snappedLat + "," + snappedLng + ":" + radius + ":" + sort + ":" + type);
         return snappedLat + "," + snappedLng + ":" + radius + ":" + sort + ":" + type;
     }
 }
