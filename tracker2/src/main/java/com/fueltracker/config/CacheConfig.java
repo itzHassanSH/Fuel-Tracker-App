@@ -20,8 +20,9 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         CaffeineCacheManager manager = new CaffeineCacheManager("stationSearch");
         manager.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(Duration.ofMinutes(10))
-                .maximumSize(1000));
+                .recordStats()
+                .expireAfterWrite(Duration.ofMinutes(30))
+                .maximumSize(10000));
         return manager;
     }
 }
