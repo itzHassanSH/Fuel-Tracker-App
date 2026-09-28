@@ -28,7 +28,7 @@ public class StationMapper {
                 .isActive(apiStation.isOpen())
                 .lastSyncedAt(LocalDateTime.now())
                 .build();
-        // add empty list "favouritedBy" if station doesnt exist in cache
+        // add empty list "favouritedBy" if station doesn't exist in cache
         // add fields "lastSyncedAt" and "isActive"
     }
 
@@ -37,6 +37,8 @@ public class StationMapper {
     }
 
     public StationResponse apiToResponse(ApiStation station) {
+        // None of the double values such as dist, diesel, e5 etc. should ever be null. Either an exception is thrown already or they exist with
+        // a real value.
         return new StationResponse(
                 station.name(),
                 station.brand(),
