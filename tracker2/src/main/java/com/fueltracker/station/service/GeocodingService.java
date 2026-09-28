@@ -1,7 +1,7 @@
 package com.fueltracker.station.service;
 
 import com.fueltracker.dto.GeocodingApi.NominatimResponse;
-import com.fueltracker.exceptions.LocationNotFound;
+import com.fueltracker.advice.exceptions.LocationNotFound;
 import com.fueltracker.shared.Coordinates;
 import org.springframework.stereotype.Service;
 
