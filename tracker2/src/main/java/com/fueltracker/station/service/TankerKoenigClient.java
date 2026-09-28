@@ -1,6 +1,8 @@
 package com.fueltracker.station.service;
 
+import com.fueltracker.advice.exceptions.TankerKoenigApiException;
 import com.fueltracker.config.TankerKoenigProperties;
+import com.fueltracker.dto.Api.ApiPriceResponse;
 import com.fueltracker.dto.Api.ApiStationResponse;
 import com.fueltracker.shared.FuelType;
 import com.fueltracker.shared.SortType;
@@ -8,7 +10,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.text.DecimalFormat;
+
+import java.util.List;
 
 @Component
 public class TankerKoenigClient {
@@ -20,12 +23,12 @@ public class TankerKoenigClient {
         this.properties = properties;
     }
 
-    public ApiStationResponse fetchStations(double lat, double lng, int radius, SortType sortType, FuelType fuelType) {
+    public ApiStationResponse fetchStations(double lat, double lng, int radius, SortType sortType, FuelType fuelType) throws TankerKoenigApiException{
 
         String sortTypeString = sortType.toString().toLowerCase();
         String fuelTypeString = fuelType.toString().toLowerCase();
 
-        return restClient.get()
+        ApiStationResponse resp =  restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/json/list.php")
                         .queryParam("lat", lat)
@@ -37,5 +40,33 @@ public class TankerKoenigClient {
                         .build())
                 .retrieve()
                 .body(ApiStationResponse.class);
+
+        // Exception caught
+        if (resp == null || !resp.ok()) {
+            throw new TankerKoenigApiException(resp == null? "empty response" : resp.message());
+        }
+        return resp;
+    }
+
+    public ApiPriceResponse fetchPrices(List<String> stationIds) throws TankerKoenigApiException {
+        StringBuilder stringBuilder = new StringBuilder(stationIds.getFirst());
+        for (int i = 1; i < stationIds.size(); i++) {
+            stringBuilder.append(", ").append(stationIds.get(i));
+        }
+
+        ApiPriceResponse resp = restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/json/prices.php")
+                        .queryParam("ids", stringBuilder.toString())
+                        .queryParam("apikey", properties.getApiKey())
+                        .build())
+                .retrieve()
+                .body(ApiPriceResponse.class);
+
+        // Exception then caught at scheduler
+        if (resp == null || !resp.ok()) {
+            throw new TankerKoenigApiException(resp == null? "empty response" : resp.message());
+        }
+        return resp;
     }
 }
