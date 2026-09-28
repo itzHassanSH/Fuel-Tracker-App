@@ -1,11 +1,11 @@
 package com.fueltracker.price;
 
-import com.fueltracker.shared.FuelType;
+
 import com.fueltracker.station.Station;
 import jakarta.persistence.*;
 import lombok.Getter;
 
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -29,7 +29,7 @@ public class PriceSnapshot {
     // status will always be "open" if priceSnapShot object is created
     private LocalDateTime timestamp;
 
-    public PriceSnapshot() {};
+    public PriceSnapshot() {}
     private PriceSnapshot(Builder builder) {
         this.station = builder.station;
         this.e5 = builder.e5;
