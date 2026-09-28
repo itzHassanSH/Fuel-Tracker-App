@@ -6,6 +6,7 @@ import './App.css'
 import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
 import MainPage from "./pages/MainPage.tsx"
 import StationsPage from "./pages/StationsPage.tsx";
+import Layout from "./pages/Layout.tsx";
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -14,9 +15,11 @@ function App() {
 
     <BrowserRouter>
         <Routes>
-            <Route path={"/"} element={<Navigate to={"/main"}/>}/>
-            <Route path={"/main"} element={<MainPage />} />
-            <Route path={"/search"} element={<StationsPage/>}/>
+            <Route element={<Layout />}>
+                <Route path={"/"} element={<Navigate to={"/main"}/>}/>
+                <Route path={"/main"} element={<MainPage />} />
+                <Route path={"/search"} element={<StationsPage/>}/>
+            </Route>
         </Routes>
     </BrowserRouter>
 

@@ -1,0 +1,5 @@
+.logo-img {
+    height:32px;
+    width:auto;  /* width scales proportionally to height */
+    margin-top: 8px;
+}

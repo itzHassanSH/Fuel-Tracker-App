@@ -63,11 +63,12 @@ export function toStation(dto: StationResponse) : Station {
     };
 }
 
-const RADIUS_OPTIONS = [1, 5, 10, 15, 20, 25] as const;
+export const RADIUS_OPTIONS = [1, 5, 10, 15, 20, 25] as const;
+
 export type Radius = typeof RADIUS_OPTIONS[number];  // 1|5|...|25
 
-const FUEL_TYPE_OPTIONS = ["E5", "E10", "DIESEL", "ALL"] as const;
+export const FUEL_TYPE_OPTIONS = ["E5", "E10", "DIESEL", "ALL"] as const;
 export type FuelType = typeof FUEL_TYPE_OPTIONS[number];
 
-const SORT_OPTIONS = ["PRICE", "DIST"] as const;
+export const SORT_OPTIONS = ["PRICE", "DIST"] as const;
 export type Sort = typeof SORT_OPTIONS[number];
