@@ -28,7 +28,7 @@ public class TankerKoenigController {
     // search stations by location
     @GetMapping("search/stations")
     public ResponseEntity<@NonNull List<StationResponse>> searchStations(@ModelAttribute  @Valid SearchStationRequest request) {
-
+        // Since we first need coordinates to even check cache, Nominatim requires its own rate limiter
         Coordinates coordinates = geocodingService.geocode(request.location());
 
         return new ResponseEntity<>(tankerService.findStations(coordinates, request.radius(), request.sort(), request.fuelType()), HttpStatus.OK);
