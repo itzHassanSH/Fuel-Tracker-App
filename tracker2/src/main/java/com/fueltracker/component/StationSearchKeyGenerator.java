@@ -4,6 +4,8 @@ import com.fueltracker.shared.Coordinates;
 import com.fueltracker.shared.FuelType;
 import com.fueltracker.shared.SortType;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +13,8 @@ import java.lang.reflect.Method;
 
 @Component("stationSearchKeyGenerator")
 public class StationSearchKeyGenerator implements KeyGenerator {
+    private static final Logger log = LoggerFactory.getLogger(StationSearchKeyGenerator.class);
+
     @Override
     public Object generate(Object target, Method method, @Nullable Object... params) {
         Coordinates coords = (Coordinates) params[0];
@@ -28,7 +32,7 @@ public class StationSearchKeyGenerator implements KeyGenerator {
         snappedLat = Math.round(snappedLat * 10000.0) / 10000.0;
         snappedLng = Math.round(snappedLng * 10000.0) / 10000.0;
 
-        System.out.println(snappedLat + "," + snappedLng + ":" + radius + ":" + sort + ":" + type);
+        log.debug("{},{}:{}:{}:{}", snappedLat, snappedLng, radius, sort, type);
         return snappedLat + "," + snappedLng + ":" + radius + ":" + sort + ":" + type;
     }
 }
