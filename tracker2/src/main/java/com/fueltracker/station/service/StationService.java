@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -45,7 +46,7 @@ public class StationService {
     private final SchedulerProperties schedulerProperties;
     private final PriceMapper priceMapper;
 
-    public StationService(TankerKoenigClient client, StationMapper mapper, StationRepository repo, RateLimiter limiter, SnapshotRepository priceRepo,
+    public StationService(TankerKoenigClient client, StationMapper mapper, StationRepository repo, @Qualifier("tankerKoenigRateLimiter") RateLimiter limiter, SnapshotRepository priceRepo,
                           CurrentPriceRepository currentPriceRepo, SchedulerProperties schedulerProperties, PriceMapper priceMapper) {
         this.client = client;
         this.stationMapper = mapper;
