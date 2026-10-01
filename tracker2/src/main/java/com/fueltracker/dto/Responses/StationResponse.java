@@ -14,6 +14,7 @@ public record StationResponse(
     double lat,
     double lng,
 
+    // logic in mapper maps the price attribute to one of these in-case it appears (when type is not all)
     Double diesel,
     Double e5,
     Double e10,
