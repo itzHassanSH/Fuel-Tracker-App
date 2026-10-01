@@ -14,6 +14,7 @@ public record ApiStation(
       Double diesel,
       Double e5,
       Double e10,
+      Double price,
 
       boolean isOpen,
       String houseNumber,
