@@ -2,6 +2,7 @@ package com.fueltracker.station.mapper;
 
 import com.fueltracker.dto.Api.ApiStation;
 import com.fueltracker.dto.Responses.StationResponse;
+import com.fueltracker.shared.FuelType;
 import com.fueltracker.station.Station;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +37,7 @@ public class StationMapper {
         return apiStations.stream().map(this::apiToDomain).toList();
     }
 
-    public StationResponse apiToResponse(ApiStation station) {
+    public StationResponse apiToResponse(ApiStation station, FuelType type) {
         // None of the double values such as dist, diesel, e5 etc. should ever be null. Either an exception is thrown already or they exist with
         // a real value.
         return new StationResponse(
@@ -52,15 +53,19 @@ public class StationMapper {
                 station.lat(),
                 station.lng(),
 
-                station.diesel(),
-                station.e5(),
-                station.e10(),
+                type == FuelType.DIESEL? station.price() :station.diesel(),
+                type == FuelType.E5? station.price() :station.e5(),
+                type == FuelType.E10? station.price() :station.e10(),
 
                 station.isOpen()
         );
     }
 
-    public List<StationResponse> toResponseList(List<ApiStation> apiStations) {
-        return apiStations.stream().map(this::apiToResponse).toList();
+    public List<StationResponse> toResponseList(List<ApiStation> apiStations, FuelType type) {
+        List<StationResponse> responses = new ArrayList<>();
+        for (ApiStation station: apiStations) {
+            responses.add(apiToResponse(station, type));
+        }
+        return responses;
     }
 }
