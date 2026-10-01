@@ -72,11 +72,14 @@ public class StationService {
         // note: since the id is the externalID we can directly saveAll - where if object already exists we simply merge,
         //       thus preventing duplicates
 
-        List<Station> stationList = stationMapper.toDomainList(apiResponse.stations());
-        stationRepo.saveAll(stationList);
+        // To prevent different objects with same id being saved into DB, we only save when the fuelType is all, and not a single specific one
+        if (type.equals(FuelType.ALL)) {
+            List<Station> stationList = stationMapper.toDomainList(apiResponse.stations());
+            stationRepo.saveAll(stationList);
+        }
         log.debug("\ncache not used");
 
-        return stationMapper.toResponseList(apiResponse.stations());
+        return stationMapper.toResponseList(apiResponse.stations(), type);
         // store in cache - stationResponse directly
 
     }
