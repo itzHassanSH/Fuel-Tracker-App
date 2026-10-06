@@ -1,12 +1,15 @@
 package com.fueltracker.station.mapper;
 
 import com.fueltracker.dto.Api.ApiPrice;
+import com.fueltracker.dto.Responses.RefreshResponse;
 import com.fueltracker.price.CurrentPrice;
 import com.fueltracker.price.PriceSnapshot;
+import com.fueltracker.shared.Status;
 import com.fueltracker.station.Station;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
-import java.time.ZoneOffset;
+import java.time.Instant;
 
 
 @Component
@@ -28,9 +31,20 @@ public class PriceMapper {
                 .e5(snapshot.getE5())
                 .e10(snapshot.getE10())
                 .diesel(snapshot.getDiesel())
-                .lastChecked(snapshot.getTimestamp().toInstant(ZoneOffset.MIN))
+                .lastChecked(snapshot.getTimestamp())
                 .stationId(snapshot.getStation().getId())
                 .build();
+    }
+
+    public RefreshResponse apiToResponse(@Nullable ApiPrice apiPrice, String stationId) {
+        return new RefreshResponse(
+                apiPrice == null ? Status.UNAVAILABLE : apiPrice.status().equals("open") ? Status.OPEN : apiPrice.status().equals("closed") ? Status.CLOSED : Status.NO_PRICES,
+                apiPrice == null? null : apiPrice.e5(),
+                apiPrice == null? null : apiPrice.e10(),
+                apiPrice == null? null : apiPrice.diesel(),
+                Instant.now(),
+                stationId
+        );
     }
 
 }

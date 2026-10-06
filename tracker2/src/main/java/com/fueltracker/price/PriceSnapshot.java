@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Getter
@@ -27,7 +27,7 @@ public class PriceSnapshot {
     private Double e10;
     private Double diesel;
     // status will always be "open" if priceSnapShot object is created
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 
     public PriceSnapshot() {}
     private PriceSnapshot(Builder builder) {
@@ -45,7 +45,7 @@ public class PriceSnapshot {
         private Double e10;
         private Double diesel;
 
-        private LocalDateTime timestamp;
+        private Instant timestamp;
 
         public Builder station(Station station) {
             this.station = station;
@@ -64,7 +64,7 @@ public class PriceSnapshot {
             return this;
         }
 
-        public Builder timestamp(LocalDateTime timestamp) {
+        public Builder timestamp(Instant timestamp) {
             this.timestamp = timestamp;
             return this;
         }
