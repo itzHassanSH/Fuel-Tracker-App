@@ -20,6 +20,7 @@ public class PriceMapper {
                 .e10(apiPrice.e10())
                 .diesel(apiPrice.diesel())
                 .station(station)
+                .timestamp(Instant.now())
                 .build();
     }
 

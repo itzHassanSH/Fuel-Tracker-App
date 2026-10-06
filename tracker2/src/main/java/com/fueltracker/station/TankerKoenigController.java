@@ -1,8 +1,10 @@
 package com.fueltracker.station;
 
+import com.fueltracker.dto.Requests.RefreshRequest;
 import com.fueltracker.dto.Requests.SearchStationRequest;
 
 import com.fueltracker.dto.Responses.StationResponse;
+import com.fueltracker.dto.Responses.RefreshResponse;
 import com.fueltracker.shared.Coordinates;
 import com.fueltracker.station.service.GeocodingService;
 import com.fueltracker.station.service.StationService;
@@ -32,5 +34,11 @@ public class TankerKoenigController {
         Coordinates coordinates = geocodingService.geocode(request.location());
 
         return new ResponseEntity<>(tankerService.findStations(coordinates, request.radius(), request.sort(), request.fuelType()), HttpStatus.OK);
+    }
+
+    // get refreshed favourite stations
+    @GetMapping("favourites/refresh")
+    public ResponseEntity<@NonNull List<RefreshResponse>> fetchStations(@ModelAttribute @Valid RefreshRequest request) {
+        return new ResponseEntity<>(tankerService.refresh(request.stationIds()), HttpStatus.OK);
     }
 }

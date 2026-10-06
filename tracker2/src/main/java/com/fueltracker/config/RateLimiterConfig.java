@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class RateLimiterConfig {
     @Bean("tankerKoenigRateLimiter")
     public RateLimiter listPhpRateLimiter() {
-        return RateLimiter.create(1.0 / 60);
+        return RateLimiter.create(1.0 / 30);
     }
 
     @Bean("nominatimRateLimiter")

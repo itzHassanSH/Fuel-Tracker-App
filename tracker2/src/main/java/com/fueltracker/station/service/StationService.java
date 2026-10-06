@@ -1,6 +1,7 @@
 package com.fueltracker.station.service;
 
 import com.fueltracker.advice.exceptions.TankerKoenigApiException;
+import com.fueltracker.component.PriceCache;
 import com.fueltracker.config.SchedulerProperties;
 import com.fueltracker.dto.Api.ApiPrice;
 import com.fueltracker.dto.Api.ApiPriceResponse;
@@ -8,6 +9,7 @@ import com.fueltracker.dto.Api.ApiStationResponse;
 import com.fueltracker.dto.Responses.StationResponse;
 import com.fueltracker.advice.exceptions.RateLimitExceeded;
 import com.fueltracker.advice.exceptions.StationNotFound;
+import com.fueltracker.dto.Responses.RefreshResponse;
 import com.fueltracker.price.CurrentPrice;
 import com.fueltracker.price.CurrentPriceRepository;
 import com.fueltracker.price.PriceSnapshot;
@@ -28,9 +30,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 @Service
@@ -42,27 +45,33 @@ public class StationService {
     private final TankerKoenigClient client;
     @Getter
     private final StationMapper stationMapper;
-    private final RateLimiter limiter;
+    private final RateLimiter stationLimiter;
+    private final RateLimiter pricesLimiter;
     private final SchedulerProperties schedulerProperties;
     private final PriceMapper priceMapper;
+    private final PriceCache priceCache;
+    private static final Duration FRESH_FOR = Duration.ofMinutes(10);
 
-    public StationService(TankerKoenigClient client, StationMapper mapper, StationRepository repo, @Qualifier("tankerKoenigRateLimiter") RateLimiter limiter, SnapshotRepository priceRepo,
-                          CurrentPriceRepository currentPriceRepo, SchedulerProperties schedulerProperties, PriceMapper priceMapper) {
+    public StationService(TankerKoenigClient client, StationMapper mapper, StationRepository repo, @Qualifier("tankerKoenigRateLimiter") RateLimiter stationLimiter, @Qualifier("pricesRateLimiter") RateLimiter priceLimiter,
+                          SnapshotRepository priceRepo, CurrentPriceRepository currentPriceRepo, SchedulerProperties schedulerProperties, PriceMapper priceMapper, PriceCache priceCache) {
         this.client = client;
         this.stationMapper = mapper;
         this.stationRepo = repo;
         this.priceRepo = priceRepo;
         this.currentPriceRepo = currentPriceRepo;
-        this.limiter = limiter;
+        this.stationLimiter = stationLimiter;
         this.schedulerProperties = schedulerProperties;
         this.priceMapper = priceMapper;
+        this.pricesLimiter = priceLimiter;
+        this.priceCache = priceCache;
+
     }
 
 
     @Cacheable(value = "stationSearch", keyGenerator = "stationSearchKeyGenerator")
-    public List<StationResponse> findStations(Coordinates coords, int radius, SortType sort, FuelType type ) throws TankerKoenigApiException {
-        if (!limiter.tryAcquire()) {
-            throw new RateLimitExceeded("API rate limit exceeded - only 1 request per minute allowed");
+    public List<StationResponse> findStations(Coordinates coords, int radius, SortType sort, FuelType type ) {
+        if (!stationLimiter.tryAcquire()) {
+            throw new RateLimitExceeded("Stations API rate limit exceeded - only 1 request per 30 seconds allowed");
         }
 
         ApiStationResponse apiResponse = client.fetchStations(coords.latitude(), coords.longitude(), radius, sort, type);
@@ -84,7 +93,51 @@ public class StationService {
 
     }
 
+    public List<RefreshResponse> refresh(Set<String> stationIds) {
+        // DONE: implement cache logic with splitting between hit-and-miss - naturally before calling api
+
+        List<RefreshResponse> result = new ArrayList<>();
+        List<String> stale = new ArrayList<>();
+
+        // hit : if present in cache (i.e. not null) AND not more than 10 minutes old
+        for (String id : stationIds) {
+            Optional<RefreshResponse> cached = priceCache.get(id);
+            if (cached.isPresent() && priceCache.isFresh(cached.get(), FRESH_FOR)) {
+                result.add(cached.get());
+            } else {
+                stale.add(id);
+            }
+        }
+        if (stale.isEmpty()) return result;
+
+        if (!pricesLimiter.tryAcquire()) {
+            for (String id: stale) {
+                priceCache.get(id).ifPresent(result::add);
+            }
+            if (result.isEmpty()) throw new RateLimitExceeded("Please try again later - rate limit exceeded and no cached results available");
+            return result;
+        }
+
+        List<RefreshResponse> responseList = new ArrayList<>();
+        ApiPriceResponse apiPrices = client.fetchPrices(stationIds.stream().toList());
+        for (String stationId: stationIds.stream().toList()) {
+            ApiPrice price = apiPrices.prices().get(stationId);
+            // In case of price being null, it creates an empty response (all prices are null) with Status: UNAVAILABLE
+            RefreshResponse resp = priceMapper.apiToResponse(price, stationId);
+            if (price != null) {
+                priceCache.put(resp);
+            }
+            responseList.add(resp);
+        }
+
+        return responseList;
+    }
+
     public void schedulePrice() {
+        double waited = pricesLimiter.acquire();   // sleeps here if needed, then continues
+        if (waited > 0) {
+            log.info("Scheduler waited {}s for rate limiter", waited);
+        }
         List<String> stationIds = schedulerProperties.getStationIds();
         ApiPriceResponse apiPrices;
         try {
@@ -110,16 +163,11 @@ public class StationService {
                     || !Objects.equals(lastPrice.getDiesel(), apiPrice.diesel()))
                 {
                     try {
-                        PriceSnapshot newSnapShot = new PriceSnapshot.Builder()
-                                .diesel(apiPrice.diesel())
-                                .e5(apiPrice.e5())
-                                .e10(apiPrice.e10())
-                                .station(stationRepo.findById(stationId).orElseThrow(() -> new StationNotFound(
-                                        "Station: " + stationId + " not found - expected to already exist from prior search/save"
-                                )))
-                                .timestamp(LocalDateTime.now())
-                                .build();
-
+                        PriceSnapshot newSnapShot = priceMapper.apiToDomain(
+                                apiPrice,
+                                stationRepo.findById(stationId).orElseThrow(() -> new StationNotFound(
+                                "Station: " + stationId + " not found - expected to already exist from prior search/save"))
+                        );
                         priceRepo.save(newSnapShot);
                         currentPriceRepo.save(priceMapper.snapShotToLastPrice(newSnapShot));
                     } catch (StationNotFound e){

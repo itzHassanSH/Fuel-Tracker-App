@@ -23,7 +23,7 @@ public class TankerKoenigClient {
         this.properties = properties;
     }
 
-    public ApiStationResponse fetchStations(double lat, double lng, int radius, SortType sortType, FuelType fuelType) throws TankerKoenigApiException{
+    public ApiStationResponse fetchStations(double lat, double lng, int radius, SortType sortType, FuelType fuelType) {
 
         String sortTypeString = sortType.toString().toLowerCase();
         String fuelTypeString = fuelType.toString().toLowerCase();
@@ -48,10 +48,10 @@ public class TankerKoenigClient {
         return resp;
     }
 
-    public ApiPriceResponse fetchPrices(List<String> stationIds) throws TankerKoenigApiException {
+    public ApiPriceResponse fetchPrices(List<String> stationIds) {
         StringBuilder stringBuilder = new StringBuilder(stationIds.getFirst());
         for (int i = 1; i < stationIds.size(); i++) {
-            stringBuilder.append(", ").append(stationIds.get(i));
+            stringBuilder.append(",").append(stationIds.get(i));
         }
 
         ApiPriceResponse resp = restClient.get()
