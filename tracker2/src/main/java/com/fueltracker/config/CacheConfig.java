@@ -5,7 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 // Spring's caching module ships with adapter classes
 import org.springframework.cache.caffeine.CaffeineCache;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
 
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
