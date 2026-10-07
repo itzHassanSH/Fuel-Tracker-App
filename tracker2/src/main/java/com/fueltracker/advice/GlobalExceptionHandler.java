@@ -1,21 +1,25 @@
 package com.fueltracker.advice;
 
-import com.fueltracker.advice.exceptions.LocationNotFound;
-import com.fueltracker.advice.exceptions.RateLimitExceeded;
-import com.fueltracker.advice.exceptions.StationNotFound;
-import com.fueltracker.advice.exceptions.TankerKoenigApiException;
+import com.fueltracker.advice.exceptions.*;
 import lombok.NonNull;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import org.springframework.validation.BindException;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(RateLimitExceeded.class)
     public ResponseEntity<@NonNull ErrorResponse> handleRateLimit(RateLimitExceeded exc) {
         return ResponseEntity
@@ -47,22 +51,36 @@ public class GlobalExceptionHandler {
     }
     // we don't pass the raw exception message to client here, since it may contain sensitive information such as API key
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<@NonNull ErrorResponse> handleException(Exception exc) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR) // 500 — internal server error - handles all exceptions not already explicitly covered
-                .body(new ErrorResponse("INTERNAL_SERVER_ERROR", exc.getMessage()));
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, @Nullable Object body, HttpHeaders headers,
+                                                             HttpStatusCode statusCode, WebRequest request) {
+        String message = (body instanceof ProblemDetail pd && pd.getDetail() != null)
+                ? pd.getDetail()
+                : "Request failed";
+        HttpStatus status = HttpStatus.resolve(statusCode.value());
+        String code = status != null ? status.name() : "ERROR";   // e.g. "BAD_REQUEST"
+
+        return ResponseEntity.status(statusCode).headers(headers)
+                .body(new ErrorResponse(code, message));
     }
 
-    // Bean Validation failures on a @Valid @ModelAttribute typically throw BindException
-    @ExceptionHandler(BindException.class)
-    public ResponseEntity<@NonNull ErrorResponse> handleValidation (BindException exc) {
-        // BindingResult: a container for "here's everything that went wrong, per field."
-        String message = exc.getBindingResult().getFieldErrors().stream()
+    // Bean Validation failures on a @Valid @ModelAttribute typically throw BindException - MethodArgumentNotValidException extends BindException
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status,
+                                                                  WebRequest request) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(err -> err.getField() + ": " + err.getDefaultMessage())
                 .collect(Collectors.joining("; "));
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.status(status)
                 .body(new ErrorResponse("VALIDATION_FAILED", message));
+    }
+
+    // Last resort: log it, never leak internals
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<@NonNull ErrorResponse> handleUnexpected(Exception exc) {
+        log.error("Unhandled Exception", exc);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR) // 500 — internal server error - handles all exceptions not already explicitly covered
+                .body(new ErrorResponse("INTERNAL_SERVER_ERROR", "Unexcepted Error"));
     }
 }
