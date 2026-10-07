@@ -72,3 +72,12 @@ export type FuelType = typeof FUEL_TYPE_OPTIONS[number];
 
 export const SORT_OPTIONS = ["PRICE", "DIST"] as const;
 export type Sort = typeof SORT_OPTIONS[number];
+
+// same logic as above, just exported to use in FavouritesPage too
+export function toPrices(diesel: null|number, e5: null|number, e10: null|number) : {fuelType: 'DIESEL' | 'E5' | 'E10'; price: number}[] {
+    const prices :{fuelType: 'DIESEL' | 'E5' | 'E10'; price: number}[] = [];
+    if (diesel !== null) prices.push({ fuelType: 'DIESEL', price: diesel });
+    if (e5 !== null) prices.push({ fuelType: 'E5', price: e5 });
+    if (e10 !== null) prices.push({ fuelType: 'E10', price: e10 });
+    return prices;
+}

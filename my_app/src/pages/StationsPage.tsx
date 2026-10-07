@@ -12,11 +12,14 @@ import {
     toStation
 } from "../types/station.ts";
 import LoadingSpinner from "../components/LoadingSpinner.tsx";
-import {UseErrorBanner} from "../components/UseErrorBanner.ts";
+import {UseErrorBanner} from "../hooks/useErrorBanner.ts";
 import ErrorBanner from "../components/ErrorBanner.tsx";
 import StationCard from "../components/StationCard.tsx";
 
 import {RADIUS_OPTIONS, FUEL_TYPE_OPTIONS, SORT_OPTIONS} from "../types/station.ts"
+
+import {useFavourites} from "../hooks/useFavourites.ts";
+import {toFavourite} from "../types/favourite.ts";
 
 // with query params, we call getStations here and display results
 export default function StationsPage () {
@@ -26,6 +29,8 @@ export default function StationsPage () {
     const [loading, setLoading] = useState<boolean>(false);
 
     const {error, showError, clearError} = UseErrorBanner();
+
+    const {isFavourited, add, remove} = useFavourites();
 
     useEffect(() => {
         const location = searchParams.get("location")
@@ -78,6 +83,11 @@ export default function StationsPage () {
         fetchResults();
     }, [searchParams.toString()]);
 
+    function toggleFavourite(s : Station) {
+        if (isFavourited(s.externalId)) remove(s.externalId)
+        else if (!add(toFavourite(s))) showError("You can only favourite upto 10 stations");
+    }
+
     return (
         <div>
             {loading && (
@@ -88,7 +98,9 @@ export default function StationsPage () {
             )}
             {!loading && !error && (
                 stations.map((s) => (
-                    <StationCard station={s} key={s.externalId}/>
+                    <StationCard station={s} isFavourited={isFavourited(s.externalId)}
+                                 onToggleFavourite={() => toggleFavourite(s)}
+                                 key={s.externalId}/>
                 ))
             )}
 

@@ -7,6 +7,7 @@ import {BrowserRouter, Routes, Route, Navigate} from "react-router-dom";
 import MainPage from "./pages/MainPage.tsx"
 import StationsPage from "./pages/StationsPage.tsx";
 import Layout from "./pages/Layout.tsx";
+import FavouritesPage from "./pages/FavouritesPage.tsx";
 
 function App() {
   // const [count, setCount] = useState(0)
@@ -19,6 +20,7 @@ function App() {
                 <Route path={"/"} element={<Navigate to={"/main"}/>}/>
                 <Route path={"/main"} element={<MainPage />} />
                 <Route path={"/search"} element={<StationsPage/>}/>
+                <Route path={"/favourites"} element={<FavouritesPage/>}/>
             </Route>
         </Routes>
     </BrowserRouter>

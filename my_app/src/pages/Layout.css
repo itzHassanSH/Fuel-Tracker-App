@@ -1,5 +1,9 @@
-.logo-img {
+.main-link-img {
     height:32px;
     width:auto;  /* width scales proportionally to height */
     margin-top: 8px;
+}
+
+.favourites-link-img {
+    padding-left: 50px;
 }
