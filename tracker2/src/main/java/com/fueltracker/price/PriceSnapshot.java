@@ -12,7 +12,7 @@ import java.time.Instant;
 @Getter
 public class PriceSnapshot {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
 

@@ -1,4 +1,4 @@
-package com.fueltracker.station.mapper;
+package com.fueltracker.price.mapper;
 
 import com.fueltracker.dto.Api.ApiPrice;
 import com.fueltracker.dto.Responses.RefreshResponse;

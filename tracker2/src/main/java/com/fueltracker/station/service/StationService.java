@@ -19,7 +19,7 @@ import com.fueltracker.shared.FuelType;
 import com.fueltracker.shared.SortType;
 import com.fueltracker.station.Station;
 import com.fueltracker.station.StationRepository;
-import com.fueltracker.station.mapper.PriceMapper;
+import com.fueltracker.price.mapper.PriceMapper;
 import com.fueltracker.station.mapper.StationMapper;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.Getter;
@@ -82,6 +82,22 @@ public class StationService {
         // To prevent different objects with same id being saved into DB, we only save when the fuelType is all, and not a single specific one
         if (type.equals(FuelType.ALL)) {
             List<Station> stationList = stationMapper.toDomainList(apiResponse.stations());
+            for (Station station: stationList) {
+                System.out.println(
+                        station.getId() + ",\n" +
+                        station.getName() + ",\n" +
+                        station.getBrand() + ",\n" +
+                        station.getStreet() + ",\n" +
+                        station.getPostalCode() + ",\n" +
+                        station.getHouseNumber() + ",\n" +
+                        station.getPlace() + ",\n" +
+                        station.getLat() + ",\n" +
+                        station.getLng() + ",\n" +
+                        station.isOpen() + ",\n" +
+                        station.getLastSyncedAt()
+                );
+            }
+
             stationRepo.saveAll(stationList);
         }
         log.debug("\ncache not used");
@@ -132,6 +148,8 @@ public class StationService {
     }
 
     public void schedulePrice() {
+        // TODO: remember to initially add the static list of stations to stationRepo
+
         double waited = pricesLimiter.acquire();   // sleeps here if needed, then continues
         if (waited > 0) {
             log.info("Scheduler waited {}s for rate limiter", waited);

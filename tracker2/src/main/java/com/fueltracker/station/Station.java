@@ -2,14 +2,12 @@ package com.fueltracker.station;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import lombok.Getter;
-import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.Instant;
+
+// TODO: change postalCode's type from INT to STRING, since post codes like Dresden's start with 0 thus ends up being 1705 instead of 01705
+// TODO: need logic to convert such integer (from api) to correct string too (use length check)
 
 @Getter
 @Entity
@@ -20,7 +18,7 @@ public class Station {
     private String name;
     private String brand;
     private String street;
-    private int postalCode;
+    private String postalCode;
     private String houseNumber;
     private String place;   // E.g. Stuttgart
 
@@ -28,17 +26,15 @@ public class Station {
     private double lat;
     private double lng;
 
-    private double distance;
-
-    private boolean isActive;
-    private LocalDateTime lastSyncedAt;
+    // removed field: "distance"
+    private boolean isOpen;
+    private Instant lastSyncedAt;
 
     // both opening times and fuels should lie inside cache and returned after requests -
     // just not saved inside the DB itself
 
     // here no cascading since deleting a favorite should NOT delete the station itself
-    @OneToMany(mappedBy = "station")
-    private List<FavouriteStation> favouritedBy;
+    // Removed favouritedBy field
 
     // No OneToMany direction with price snapshot!
     // Since most of the time we'll be doing priceSnapshotRepo.findBy...
@@ -55,10 +51,7 @@ public class Station {
         this.place = builder.place;
         this.lat = builder.lat;
         this.lng = builder.lng;
-        this.distance = builder.distance;
-        this.favouritedBy = builder.favouritedBy;
-
-        this.isActive = builder.isActive;
+        this.isOpen = builder.isOpen;
         this.lastSyncedAt = builder.lastSyncedAt;
     }
 
@@ -67,15 +60,13 @@ public class Station {
         private String name;
         private String brand;
         private String street;
-        private int postalCode;
+        private String postalCode;
         private String houseNumber;
         private String place;   // E.g. Stuttgart
         private double lat;
         private double lng;
-        private double distance;
-        private List<FavouriteStation> favouritedBy;
-        private boolean isActive;
-        private LocalDateTime lastSyncedAt;
+        private boolean isOpen;
+        private Instant lastSyncedAt;
 
         public Builder id (String id) {
             this.id = id;
@@ -93,7 +84,7 @@ public class Station {
             this.street = street;
             return this;
         }
-        public Builder postalCode (int postalCode) {
+        public Builder postalCode (String postalCode) {
             this.postalCode = postalCode;
             return this;
         }
@@ -113,19 +104,11 @@ public class Station {
             this.lng = lng;
             return this;
         }
-        public Builder distance (double distance) {
-            this.distance = distance;
+        public Builder isOpen(boolean isOpen) {
+            this.isOpen = isOpen;
             return this;
         }
-        public Builder favouritedBy (List<FavouriteStation> favouritedBy) {
-            this.favouritedBy = favouritedBy;
-            return this;
-        }
-        public Builder isActive(boolean isActive) {
-            this.isActive = isActive;
-            return this;
-        }
-        public Builder lastSyncedAt(LocalDateTime lastSyncedAt) {
+        public Builder lastSyncedAt(Instant lastSyncedAt) {
             this.lastSyncedAt = lastSyncedAt;
             return this;
         }
