@@ -68,6 +68,8 @@ export default function StationsPage () {
                 const stations: Station[] = response.map(toStation)
 
                 setStations(stations);
+
+                if (stations.length === 0) showError("No Stations found")
             } catch (err) {
                 const msg = axios.isAxiosError(err)
                     ? err.response?.data?.message ?? err.message

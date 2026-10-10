@@ -47,9 +47,10 @@ function formatAddress(street: string, postalCode: string, houseNumber: string, 
 
 export function toStation(dto: StationResponse) : Station {
     const prices: Station['prices'] = [];
-    if (dto.diesel !== null) prices.push({ fuelType: 'DIESEL', price: dto.diesel });
-    if (dto.e5 !== null) prices.push({ fuelType: 'E5', price: dto.e5 });
-    if (dto.e10 !== null) prices.push({ fuelType: 'E10', price: dto.e10 });
+    // != allowed undefined and null to be compared; !== is stricter i.e. checks type too (undefined and null treated as equals!)
+    if (dto.diesel != null) prices.push({ fuelType: 'DIESEL', price: dto.diesel });
+    if (dto.e5 != null) prices.push({ fuelType: 'E5', price: dto.e5 });
+    if (dto.e10 != null) prices.push({ fuelType: 'E10', price: dto.e10 });
 
     return {
         name: dto.name,
